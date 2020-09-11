@@ -38,53 +38,65 @@ public class LoginController {
 
 
     /** 登陆 */
-    @RequestMapping(value="login")
+    @RequestMapping(value="/login")
     public String login(Model model, HttpServletRequest request) {
         String method = request.getMethod(); //获取请求方式，GET或POST
-        try {
-            if("get".equalsIgnoreCase(method)) {
-                return "admin/basic/login";
-            } else if("post".equalsIgnoreCase(method)) {
-                String errMsg = null;
-                String username = request.getParameter("username"); //用户名
-                String password = request.getParameter("password"); //密码
-
-                User u = userService.findByUsername(username);
-                if(u==null || u.getStatus()==null || u.getStatus()!=1)
-                {
-                    errMsg = username+"不存在或已停用";
-                }
-                else if(!u.getPassword().equals(SecurityUtil.md5(username, password)))
-                {
-                    errMsg = "密码输入不正确";
-                }
-
-                else {
-                    AuthToken at = new AuthToken();
-                    at.setLogin_ip(request.getRemoteAddr());
-                    at.setLogin_time(new Date());
-                    at.setUser(u);
-                    at.setAuthMenu(menuServiceImpl.queryMenuDtoNew(u.getId()));
-                    List<String> authList = menuService.listAuthByUser(u.getId());
-                    authList.add("AdminController.index");
-                    authList.add("AdminController.updatePwd");
-                    at.setAuthList(authList);
-                    request.getSession().setAttribute(AuthToken.SESSION_NAME, at);
-                    request.getSession().setAttribute("login_user", u);
-                }
-                if(errMsg!=null && !"".equals(errMsg)) {
-                    model.addAttribute("errMsg", errMsg);
-                    return "admin/basic/login";
-                } else {
-
-                    return "redirect:/admin";
-                }
-            }
-        } catch (NoSuchAlgorithmException e) {
-           throw new SystemException("登陆异常！");
-        }
+        if("get".equalsIgnoreCase(method)) {
+               return "admin/basic/login";
+           }
+//        try {
+//            if("get".equalsIgnoreCase(method)) {
+//                return "admin/basic/login";
+//            }
+//            else if("post".equalsIgnoreCase(method)) {
+//                String errMsg = null;
+//                String username = request.getParameter("username"); //用户名
+//                String password = request.getParameter("password"); //密码
+//
+//                User u = userService.findByUsername(username);
+//                if(u==null || u.getStatus()==null || u.getStatus()!=1)
+//                {
+//                    errMsg = username+"不存在或已停用";
+//                }
+//                else if(!u.getPassword().equals(SecurityUtil.md5(username, password)))
+//                {
+//                    errMsg = "密码输入不正确";
+//                }
+//                else {
+//                    AuthToken at = new AuthToken();
+//                    at.setLogin_ip(request.getRemoteAddr());
+//                    at.setLogin_time(new Date());
+//                    at.setUser(u);
+//                    at.setAuthMenu(menuServiceImpl.queryMenuDtoNew(u.getId()));
+//                    List<String> authList = menuService.listAuthByUser(u.getId());
+//                    authList.add("AdminController.index");
+//                    authList.add("AdminController.updatePwd");
+//                    at.setAuthList(authList);
+//                    request.getSession().setAttribute(AuthToken.SESSION_NAME, at);
+//                    request.getSession().setAttribute("login_user", u);
+//                }
+//                if(errMsg!=null && !"".equals(errMsg)) {
+//                    model.addAttribute("errMsg", errMsg);
+//                    return "admin/basic/login";
+//                } else {
+//
+//                    return "redirect:/admin";
+//                }
+//            }
+//        } catch (NoSuchAlgorithmException e) {
+//           throw new SystemException("登陆异常！");
+//        }
         return "admin/login";
     }
+
+    @RequestMapping("/loginfail")
+    public String loginfail(Model model,HttpServletRequest request){
+
+        model.addAttribute("errMsg", request.getSession().getAttribute("errMsg"));
+
+        return "/admin/basic/login";
+    }
+
 
     /** 设置当前的菜单Id */
     @RequestMapping(value="setCurrentMenuId", method= RequestMethod.POST)

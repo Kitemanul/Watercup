@@ -19,6 +19,7 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -83,10 +84,9 @@ public class WebIndexController {
             a = new Account();
             a.setEmail(email);
             a.setNickname(name);
-            try {
-                a.setPassword(SecurityUtil.md5(email, pwd));
-            } catch (NoSuchAlgorithmException e) {
-            }
+
+            a.setPassword(new BCryptPasswordEncoder().encode(pwd));
+
             a.setStatus("1");
             accountService.save(a);
 
@@ -408,34 +408,34 @@ public class WebIndexController {
     /** 用户登陆 */
     @RequestMapping(value = "/web/login")
     public String login(Model model, HttpServletRequest request) {
-        String method = request.getMethod();
-        if("post".equalsIgnoreCase(method)) {
-            String email = request.getParameter("email");
-            String password = request.getParameter("password");
-            if(email==null || password==null) {
-                throw new SystemException("请输入邮箱地址和密码登陆。");
-            }
-            Account account = accountService.findByEmail(email);
-            if(account==null || !account.getStatus().equalsIgnoreCase("1")) {
-                throw new SystemException("账户【"+email+"】不存在或已被停用。");
-            }
-            try {
-                String pwd = SecurityUtil.md5(email, password);
-                if(!pwd.equals(account.getPassword())) {
-                    throw new SystemException("密码输入错误！");
-                } else {
-                    request.getSession().setAttribute("login_account", account);
-                }
-                return "redirect:/webm/account/index";
-            } catch (NoSuchAlgorithmException e) {
-            }
-        } else {
-            Account account = (Account) request.getSession().getAttribute("login_account");
-            if(account!=null) {
-                return "redirect:/webm/account/index";
-            }
-        }
-        return "web/login";
+//        String method = request.getMethod();
+//        if("post".equalsIgnoreCase(method)) {
+//            String email = request.getParameter("email");
+//            String password = request.getParameter("password");
+//            if(email==null || password==null) {
+//                throw new SystemException("请输入邮箱地址和密码登陆。");
+//            }
+//            Account account = accountService.findByEmail(email);
+//            if(account==null || !account.getStatus().equalsIgnoreCase("1")) {
+//                throw new SystemException("账户【"+email+"】不存在或已被停用。");
+//            }
+//            try {
+//                String pwd = SecurityUtil.md5(email, password);
+//                if(!pwd.equals(account.getPassword())) {
+//                    throw new SystemException("密码输入错误！");
+//                } else {
+//                    request.getSession().setAttribute("login_account", account);
+//                }
+//                return "redirect:/webm/account/index";
+//            } catch (NoSuchAlgorithmException e) {
+//            }
+//        } else {
+//            Account account = (Account) request.getSession().getAttribute("login_account");
+//            if(account!=null) {
+//                return "redirect:/webm/account/index";
+//            }
+//        }
+        return "/web/login";
     }
 
     /** 退出 */
